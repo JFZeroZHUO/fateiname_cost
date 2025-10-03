@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>姓名文化内涵分析 - 传承中华文化智慧</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- 使用更可靠的CDN链接并添加defer属性 -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // 创建Supabase客户端
+        const supabaseUrl = 'https://dbxjjbegydyudxqzfips.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRieGpqYmVneWR5dWR4cXpmaXBzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0MjA2ODQsImV4cCI6MjA3NDk5NjY4NH0.9ZkOGGwQC3q5KEqobIA9Vbbrz3-KJkXHVCruDYUgOig';
+        window.supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+    </script>
+    <script src="auth.js"></script>
+    <!-- 移除script.js引用，因为它可能已经在其他地方引入 -->
+</head>
+<body>
+    <div class="container">
+        <!-- 头部区域 -->
+        <header class="header">
+            <h1 class="title">姓名-命理学说分析</h1>
+            <p class="subtitle">以科学态度传承中华文化，探索汉字之美与文化智慧</p>
+            <div class="auth-buttons" id="authButtons">
+                <button id="loginBtn" class="auth-btn">登录</button>
+                <button id="registerBtn" class="auth-btn">注册</button>
+            </div>
+            <div class="user-info" id="userInfo" style="display: none;">
+                <span id="welcomeUser">欢迎，</span>
+                <span id="userPoints">积分: 0</span>
+                <button id="logoutBtn" class="auth-btn">退出</button>
+            </div>
+        </header>
+
+        <!-- 输入区域 -->
+        <section class="input-section">
+            <div class="input-container">
+                <label for="nameInput" class="input-label">请输入您的姓名</label>
+                <input 
+                    type="text" 
+                    id="nameInput" 
+                    class="name-input" 
+                    placeholder="例如：张三"
+                    maxlength="4"
+                >
+                <button id="analyzeBtn" class="analyze-btn">
+                    <span class="btn-text">开始分析</span>
+                    <span class="btn-loading" style="display: none;">分析中...</span>
+                </button>
+            </div>
+            <div class="input-tips">
+                <p>💡 支持2-4个中文字符的姓名分析</p>
+            </div>
+            <div class="cultural-statement">
+                <p>📚 <strong>文化传承声明</strong>：本工具以科学理性的态度传承中华文化智慧，通过姓名的文字学、美学和哲学内涵分析，为您提供积极的情绪价值和文化体验。这是文化传统的现代表达，而非迷信预测。
+                <br><span class="note-text">（请勿输入著名人物的姓名）</span></p>
+            </div>
+        </section>
+
+        <!-- 加载动画 -->
+        <div id="loadingAnimation" class="loading-animation" style="display: none;">
+            <div class="loading-spinner"></div>
+            <p>AI正在为您分析姓名寓意...</p>
+        </div>
+
+        <!-- 登录模态框 -->
+        <div id="loginModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <span class="close-modal">&times;</span>
+                <h2>用户登录</h2>
+                <div class="form-group">
+                    <label for="loginUsername">用户名</label>
+                    <input type="text" id="loginUsername" placeholder="请输入用户名">
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">密码</label>
+                    <input type="password" id="loginPassword" placeholder="请输入密码">
+                </div>
+                <button id="submitLogin" class="submit-btn">登录</button>
+                <p id="loginMessage" class="message"></p>
+            </div>
+        </div>
+
+        <!-- 注册模态框 -->
+        <div id="registerModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <span class="close-modal">&times;</span>
+                <h2>用户注册</h2>
+                <div class="form-group">
+                    <label for="registerUsername">用户名</label>
+                    <input type="text" id="registerUsername" placeholder="请输入用户名">
+                </div>
+                <div class="form-group">
+                    <label for="registerPassword">密码</label>
+                    <input type="password" id="registerPassword" placeholder="请输入密码">
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword">确认密码</label>
+                    <input type="password" id="confirmPassword" placeholder="请再次输入密码">
+                </div>
+                <button id="submitRegister" class="submit-btn">注册</button>
+                <p id="registerMessage" class="message"></p>
+            </div>
+        </div>
+
+        <!-- 结果展示区域 -->
+        <section id="resultSection" class="result-section" style="display: none;">
+            <div class="result-header">
+                <h2 id="analyzedName" class="analyzed-name"></h2>
+                <button id="downloadBtn" class="download-btn">
+                    📥 下载分析结果
+                </button>
+            </div>
+
+            <div id="resultContent" class="result-content">
+                <!-- 偏旁部首分析 -->
+                <div class="analysis-card">
+                    <h3 class="card-title">
+                        <span class="icon">🏗️</span>
+                        偏旁部首分析
+                    </h3>
+                    <div id="radicalAnalysis" class="card-content">
+                        <!-- 动态内容 -->
+                    </div>
+                </div>
+
+                <!-- 笔画分析 -->
+                <div class="analysis-card">
+                    <h3 class="card-title">
+                        <span class="icon">✍️</span>
+                        笔画分析
+                    </h3>
+                    <div id="strokeAnalysis" class="card-content">
+                        <!-- 动态内容 -->
+                    </div>
+                </div>
+
+                <!-- 命理学说分析 -->
+                <div class="analysis-card">
+                    <h3 class="card-title">
+                        <span class="icon">🔮</span>
+                        命理学说分析
+                    </h3>
+                    <div id="fortuneAnalysis" class="card-content">
+                        <!-- 动态内容 -->
+                    </div>
+                </div>
+
+                <!-- 综合评价 -->
+                <div class="analysis-card summary-card">
+                    <h3 class="card-title">
+                        <span class="icon">⭐</span>
+                        综合评价
+                    </h3>
+                    <div id="summaryAnalysis" class="card-content">
+                        <!-- 动态内容 -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="result-actions">
+                <button id="newAnalysisBtn" class="secondary-btn">重新分析</button>
+            </div>
+        </section>
+
+        <!-- 错误提示 -->
+        <div id="errorMessage" class="error-message" style="display: none;">
+            <p id="errorText"></p>
+            <button id="closeErrorBtn" class="close-error-btn">×</button>
+        </div>
+
+        <!-- 页脚 -->
+        <footer class="footer">
+            <p>基于AI大模型提供智能分析 · 仅供娱乐参考</p>
+        </footer>
+    </div>
+
+    <!-- 引入html2canvas库用于生成图片 -->
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
