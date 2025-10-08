@@ -8,12 +8,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;700&display=swap" rel="stylesheet">
     <!-- 使用更可靠的CDN链接并添加defer属性 -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
-        // 创建Supabase客户端
-        const supabaseUrl = 'https://dbxjjbegydyudxqzfips.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRieGpqYmVneWR5dWR4cXpmaXBzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0MjA2ODQsImV4cCI6MjA3NDk5NjY4NH0.9ZkOGGwQC3q5KEqobIA9Vbbrz3-KJkXHVCruDYUgOig';
-        window.supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
-    </script>
+    <!-- 引入统一API配置文件 -->
+    <script src="api-config.js"></script>
     <script src="auth.js"></script>
     <!-- 移除script.js引用，因为它可能已经在其他地方引入 -->
 </head>
@@ -30,6 +26,7 @@
             <div class="user-info" id="userInfo" style="display: none;">
                 <span id="welcomeUser">欢迎，</span>
                 <span id="userPoints">积分: 0</span>
+                <a href="points.html" class="auth-btn recharge-btn">积分充值</a>
                 <button id="logoutBtn" class="auth-btn">退出</button>
             </div>
         </header>
@@ -178,7 +175,7 @@
     </div>
 
     <!-- 引入html2canvas库用于生成图片 -->
-    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

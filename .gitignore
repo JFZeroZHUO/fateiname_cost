@@ -31,3 +31,10 @@ yarn-error.log*
 # 缓存文件
 .cache/
 *.cache
+
+# 依赖目录
+node_modules/
+
+# 环境文件
+.env
+supabase/.env

@@ -102,34 +102,30 @@ async function checkUserSession() {
             return;
         }
         
-        // 先获取会话，再获取用户
-        const { data: sessionData, error: sessionError } = await supabaseClient.auth.getSession();
+        console.log('正在检查用户会话状态...');
+        // 强制刷新会话状态
+        const { data: { session }, error } = await supabaseClient.auth.getSession();
         
-        if (sessionError) {
-            console.error('获取会话错误:', sessionError.message);
+        if (error) {
+            console.error('获取会话出错:', error);
             updateUIForLoggedOutUser();
             return;
         }
         
-        if (sessionData && sessionData.session) {
-            // 会话存在，获取用户信息
-            const { data: { user }, error } = await supabaseClient.auth.getUser();
-            
-            if (error) throw error;
-            
-            if (user) {
-                window.currentUser = user;
-                await getUserProfile();
-                updateUIForLoggedInUser();
-            } else {
-                updateUIForLoggedOutUser();
-            }
+        console.log('会话状态:', session ? '已登录' : '未登录', session);
+        
+        if (session && session.user) {
+            // 用户已登录
+            window.currentUser = session.user;
+            updateUIForLoggedInUser(session.user);
+            fetchUserPoints(session.user.id);
         } else {
-            // 没有会话，显示未登录状态
+            // 用户未登录
+            window.currentUser = null;
             updateUIForLoggedOutUser();
         }
-    } catch (error) {
-        console.error('会话检查错误:', error.message);
+    } catch (err) {
+        console.error('检查会话时出错:', err);
         updateUIForLoggedOutUser();
     }
 }
@@ -158,6 +154,37 @@ async function getUserProfile() {
         }
     } catch (error) {
         console.error('获取用户资料错误:', error.message);
+    }
+}
+
+// 获取用户积分
+async function fetchUserPoints(userId) {
+    try {
+        if (!userId) {
+            console.error('获取用户积分错误: 用户ID不存在');
+            return;
+        }
+        
+        const { data, error } = await supabaseClient
+            .from('profiles')
+            .select('points')
+            .eq('id', userId)
+            .single();
+            
+        if (error) throw error;
+        
+        const points = data?.points || 0;
+        window.userPoints = points;
+        
+        // 更新积分显示
+        if (authElements && authElements.userPointsDisplay) {
+            authElements.userPointsDisplay.textContent = `积分: ${points}`;
+        }
+        
+        return points;
+    } catch (error) {
+        console.error('获取用户积分错误:', error.message);
+        return 0;
     }
 }
 
@@ -372,12 +399,32 @@ async function register() {
 // 退出登录
 async function logout() {
     try {
-        const { error } = await supabaseClient.auth.signOut();
-        if (error) throw error;
+        // 添加超时处理
+        const logoutPromise = supabaseClient.auth.signOut();
+        const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('登出请求超时')), 3000)
+        );
         
+        // 使用Promise.race处理可能的超时
+        const { error } = await Promise.race([logoutPromise, timeoutPromise])
+            .catch(err => {
+                console.warn('登出请求未完成，但继续处理:', err.message);
+                return { error: null }; // 即使请求中断也继续处理
+            });
+            
+        if (error) {
+            console.warn('登出API返回错误，但继续处理:', error.message);
+        }
+        
+        // 无论API请求成功与否，都更新UI状态
+        window.currentUser = null;
+        localStorage.removeItem('supabase.auth.token');
         updateUIForLoggedOutUser();
+        console.log('用户界面已更新为登出状态');
     } catch (error) {
         console.error('退出登录错误:', error.message);
+        // 即使出错也尝试更新UI
+        updateUIForLoggedOutUser();
     }
 }
 

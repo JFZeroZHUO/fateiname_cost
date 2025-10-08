@@ -56,7 +56,7 @@ function checkLibraries() {
         console.error('html2canvas库未加载');
         // 尝试重新加载
         const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';
+        script.src = 'https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js';
         script.onload = function() {
             console.log('html2canvas库重新加载成功');
         };
