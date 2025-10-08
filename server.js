@@ -28,6 +28,11 @@ app.use(express.static(__dirname, {
   }
 })); // 添加静态文件服务
 
+// 添加根路径处理
+app.get('/', (req, res) => {
+  res.sendFile(__dirname + '/index.html');
+});
+
 // ZPAY支付配置
 const PAYMENT_CONFIG = {
   API_URL: 'https://z-pay.cn/',
