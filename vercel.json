@@ -32,6 +32,14 @@
   ],
   "routes": [
     {
+      "src": "/api/create-payment",
+      "dest": "/api/create-payment.js"
+    },
+    {
+      "src": "/api/payment-notify",
+      "dest": "/api/payment-notify.js"
+    },
+    {
       "src": "/api/(.*)",
       "dest": "/server.js"
     },

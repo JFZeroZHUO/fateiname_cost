@@ -140,8 +140,8 @@ document.addEventListener('DOMContentLoaded', function() {
             document.body.appendChild(loadingElement);
             
             try {
-                // 调用创建支付API (使用新的Express服务器)
-                const response = await fetch('https://penally-pickier-anson.ngrok-free.dev/api/create-payment', {
+                // 调用创建支付API (使用Vercel API路由代理)
+                const response = await fetch('/api/create-payment', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
